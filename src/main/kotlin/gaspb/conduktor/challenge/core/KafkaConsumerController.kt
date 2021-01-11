@@ -24,8 +24,9 @@ class KafkaConsumerController(private val consumer: Consumer<String, String>, va
 
         return flow<Record> {
 
-            log.info("isactive" + currentCoroutineContext().isActive)
+            log.info("flow ctx isactive" + currentCoroutineContext().isActive)
            // TODO not active
+            // while true works but not cancellable
             while(currentCoroutineContext().isActive) {
 
                 val records = consumer.poll(Duration.ofMillis(conf.pollTimeout))

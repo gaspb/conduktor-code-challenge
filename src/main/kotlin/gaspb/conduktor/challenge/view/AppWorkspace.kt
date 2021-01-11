@@ -2,10 +2,6 @@ package gaspb.conduktor.challenge.view
 import gaspb.conduktor.challenge.core.KafkaAdminController
 import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.view.events.AdminConfigUpdated
-import gaspb.conduktor.challenge.view.events.RoutingEvent
-import gaspb.conduktor.challenge.view.events.RoutingEventEnum
-import gaspb.conduktor.challenge.view.events.TopicsViewEvent
-import javafx.geometry.Orientation
 import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
 import tornadofx.*
@@ -30,13 +26,6 @@ class AppWorkspace : Workspace() {
         disableDelete()
         disableSave()
 
-        subscribe<RoutingEvent> {
-            when(it.routingEventType) {
-                RoutingEventEnum.HOME -> workspace.dock(bootstrapView, true)
-                RoutingEventEnum.TOPICS -> workspace.dock(topicsView, true)
-                //RoutingEventEnum.CONFIG -> workspace.dock(configView, true)
-            }
-        }
         log.info("subscribing AdminConfigUpdated")
         subscribe<AdminConfigUpdated> {
             log.info("recieve AdminConfigUpdated")
@@ -67,29 +56,3 @@ class AppWorkspace : Workspace() {
         }
     }
 }
-
-/*
-class Menu : View() {
-    override val root =  borderpane {
-        top {
-            listmenu {
-                orientation = Orientation.HORIZONTAL
-
-                item("Config") {
-                    whenSelected {
-                        fire(TopicsViewEvent())
-                        log.info("Config")
-                    }
-                }
-                item("Topics") {
-                    whenSelected {
-                        log.info("Topics")
-                        fire(TopicsViewEvent())
-                    }
-                }
-
-            }
-        }
-    }
-}
-*/

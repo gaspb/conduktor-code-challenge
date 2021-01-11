@@ -5,5 +5,3 @@ import tornadofx.FXEvent
 
 
 class AdminConfigUpdated(val config: KafkaBootstrap) : FXEvent()
-
-class ListTopicsQuery() : FXEvent()

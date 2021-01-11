@@ -17,9 +17,6 @@ class TopicsView : View("Topics") {
 
     override val scope= super.scope as TopicsScope
     private val controller : KafkaAdminController by inject()
-
-    //val view : TopicView by inject()
-
     private val topics = mutableListOf<String>().asObservable()
 
 
@@ -40,7 +37,7 @@ class TopicsView : View("Topics") {
     override val root = borderpane {
 
         center {
-            text("Hello")
+
             listview(topics) {
                 cellCache {
                     s ->  button(s) {

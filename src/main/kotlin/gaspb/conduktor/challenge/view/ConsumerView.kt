@@ -22,7 +22,7 @@ class ConsumerView: View("Consuming") {
 
 
     private val job = GlobalScope.launch(Dispatchers.JavaFx) {
-        log.info("hello"+ currentCoroutineContext().isActive)
+        log.info("job ctx isActive "+ currentCoroutineContext().isActive)
         IO.fx {
             val eth = controller.createKafkaConsumer(scope.bootstrapModel.item).bind()
             eth.fold({ err ->
@@ -40,7 +40,7 @@ class ConsumerView: View("Consuming") {
                 }
             }).bind()
         }.suspended()
-        log.info("hello2"+ currentCoroutineContext().isActive)
+        log.info("wrapper isActive "+ currentCoroutineContext().isActive)
     }
 
     override fun onDelete() {

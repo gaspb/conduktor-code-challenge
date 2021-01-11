@@ -1,22 +1,8 @@
 package gaspb.conduktor.challenge.view
 
-import arrow.core.Either
-import arrow.core.extensions.either.monad.monad
-import arrow.fx.IO
-import arrow.fx.extensions.fx
-import arrow.fx.extensions.io.bracket.bracket
-import arrow.fx.extensions.io.monadIO.monadIO
-import arrow.fx.extensions.resource.monadIO.liftIO
-
-import gaspb.conduktor.challenge.core.KafkaConsumerController
-import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.model.KafkaConsumerModel
 import gaspb.conduktor.challenge.model.TopicModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.javafx.JavaFx
 import tornadofx.*
 
 

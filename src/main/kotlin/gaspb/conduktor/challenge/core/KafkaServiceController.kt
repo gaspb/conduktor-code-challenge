@@ -126,6 +126,7 @@ class KafkaServiceController : Controller() {
         }
 
 
+    // can't call without keeping a state.. (if not resource)
     fun closeConsumer(consumer: Consumer<String, String>): IO<Unit> = IO {
         log.info("CLOSING CONSUMER")
         consumer.unsubscribe()

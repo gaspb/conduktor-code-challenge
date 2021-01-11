@@ -20,10 +20,3 @@ Here are additional stuff we are using in Conduktor:
 - Use [`Flow<>`](https://kotlinlang.org/docs/reference/coroutines/flow.html) to make continuous data processing easier to code (like RxJava, Reactor, Akka Streams, ZIO Streams etc.)
 - Use [Arrow kt](https://arrow-kt.io/) (core & fx) to work with more functional programming data structures (Either, Validated, traverse, simili for-comprehension etc.)
 
-
-
-------------------------
-Views :
-- Config (bootstrap address + configs)
-- Topics
-    - Topic realtime (buttons Consume and Stop)
