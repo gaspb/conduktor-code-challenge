@@ -9,19 +9,19 @@ import tornadofx.getProperty
 import tornadofx.property
 
 class KafkaConsumer {
-    var pollTimeout by property<Long>()
+    var pollTimeout: Long by property<Long>()
     fun pollTimeoutProperty() = getProperty(KafkaConsumer::pollTimeout)
 
-    var enableAutoCommit by property<Boolean>()
+    var enableAutoCommit: Boolean by property<Boolean>()
     fun enableAutoCommitProperty() = getProperty(KafkaConsumer::enableAutoCommit)
 
-    var groupId by property<String>()
+    var groupId: String by property<String>()
     fun groupIdProperty() = getProperty(KafkaConsumer::groupId)
 
 }
 
 class KafkaConsumerModel : ItemViewModel<KafkaConsumer>(KafkaConsumer()) {
-    val pollTimeout: LongProperty = bind { item?.pollTimeoutProperty() } as LongProperty
-    val enableAutoCommit: BooleanProperty = bind { item?.enableAutoCommitProperty() } as BooleanProperty
-    val groupId: StringProperty = bind { item?.groupIdProperty() } as StringProperty
+    val pollTimeout: LongProperty = bind { item?.pollTimeoutProperty() } 
+    val enableAutoCommit: BooleanProperty = bind { item?.enableAutoCommitProperty() } 
+    val groupId: StringProperty = bind { item?.groupIdProperty() } 
 }

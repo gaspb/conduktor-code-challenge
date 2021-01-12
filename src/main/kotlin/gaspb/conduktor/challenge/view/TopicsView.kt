@@ -13,9 +13,6 @@ import kotlinx.coroutines.launch
 import tornadofx.*
 
 
-class TopicsScope : Scope() {
-    val bootstrapModel: KafkaBootstrapModel = KafkaBootstrapModel()
-}
 
 class TopicsView : View("Topics") {
 
@@ -57,13 +54,14 @@ class TopicsView : View("Topics") {
         center {
             listview(topics) {
                 cellCache { s ->
-                    button(s) {
-                        action {
+                    hbox {
+                        onLeftClick(1) {
                             val topicModel = TopicModel()
                             topicModel.item.name = s
                             workspace.dockInNewScope<TopicView>(topicModel, bootstrapModel, service)
-
                         }
+                        text(s)
+
                     }
                 }
             }

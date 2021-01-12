@@ -20,18 +20,16 @@ import java.util.concurrent.TimeUnit
 
 class KafkaProducerController(private val producer: Producer<String, String>, val conf: KafkaProducer) : Controller() {
 
-
     suspend fun getPartitions(topic: String): List<TopicPartition> {
         return producer.partitionsFor(topic).map { a -> TopicPartition(a.topic(), a.partition()) }
     }
-
 
     private fun randomString(lgth: Int): String {
         val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         val random = SecureRandom()
         val bytes = ByteArray(lgth)
         random.nextBytes(bytes)
-        return (0..bytes.size - 1)
+        return (bytes.indices)
             .map { i ->
                 charPool[random.nextInt(charPool.size)]
             }.joinToString("")

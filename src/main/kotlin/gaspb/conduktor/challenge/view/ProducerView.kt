@@ -33,8 +33,7 @@ class ProducerView : Fragment("Consuming") {
     private val count = SimpleIntegerProperty()
 
     private val job = coroutineScope.launch(Dispatchers.JavaFx) {
-        val producer = controller.createKafkaProducer(bootstrapModel.item).suspendCancellable()
-        when (producer) {
+        when (val producer = controller.createKafkaProducer(bootstrapModel.item).suspendCancellable()) {
             is Either.Left -> alert(Alert.AlertType.ERROR,"Failed to create kafka producer")
             is Either.Right -> {
                 val producerService = KafkaProducerController(producer.b, kafkaProducerModel.item)

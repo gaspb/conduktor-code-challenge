@@ -32,8 +32,7 @@ class ConsumerView : Fragment("Consuming") {
     private val entries = mutableListOf<KafkaConsumerController.Record>().asObservable()
 
     private val job = coroutineScope.launch(Dispatchers.JavaFx) {
-        val consumer = controller.createKafkaConsumer(bootstrapModel.item, kafkaConsumerModel.item).suspendCancellable()
-        when (consumer) {
+        when (val consumer = controller.createKafkaConsumer(bootstrapModel.item, kafkaConsumerModel.item).suspendCancellable()) {
             is Either.Left -> alert(Alert.AlertType.ERROR,"Failed to create kafka consumer")
             is Either.Right -> {
                 val consumerService = KafkaConsumerController(consumer.b, kafkaConsumerModel.item)

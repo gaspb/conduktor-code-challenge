@@ -6,10 +6,10 @@ import tornadofx.getProperty
 import tornadofx.property
 
 class KafkaBootstrap {
-    var url by property<String>()
+    var url: String by property<String>()
     fun urlProperty() = getProperty(KafkaBootstrap::url)
 
-    var additionalProps by property<String>()
+    var additionalProps: String by property<String>()
     fun additionalPropsProperty() = getProperty(KafkaBootstrap::additionalProps)
 
 }

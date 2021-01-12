@@ -1,6 +1,5 @@
 package gaspb.conduktor.challenge.view
 
-import gaspb.conduktor.challenge.model.KafkaBootstrap
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.view.events.AdminConfigUpdated
 import javafx.scene.layout.Priority

@@ -7,7 +7,6 @@ import tornadofx.*
 
 class ConsumerEditor : View("Consumer editor") {
 
-    val service: KafkaServiceController by inject()
     val model = KafkaConsumerModel()
 
     init {

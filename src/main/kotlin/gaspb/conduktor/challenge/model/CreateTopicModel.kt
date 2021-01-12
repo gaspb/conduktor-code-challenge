@@ -7,10 +7,10 @@ import tornadofx.getProperty
 import tornadofx.property
 
 class CreateTopic {
-    var name by property<String>()
+    var name: String by property<String>()
     fun nameProperty() = getProperty(CreateTopic::name)
 
-    var numPartition by property<Int>()
+    var numPartition: Int by property<Int>()
     fun numPartitionProperty() = getProperty(CreateTopic::numPartition)
 
 

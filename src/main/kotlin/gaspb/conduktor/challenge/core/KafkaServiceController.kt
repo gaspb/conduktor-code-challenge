@@ -11,7 +11,6 @@ import arrow.fx.extensions.fx
 import gaspb.conduktor.challenge.model.KafkaBootstrap
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.KafkaAdminClient
-import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -53,7 +52,6 @@ class KafkaServiceController : Controller() {
         }
     }
 
-    // didn't take time to do the regex
     private fun validateAdditionalProperty(prop: String): Validated<ConfigError.ParseConfig, Pair<String, String>> {
         val splited = prop.split("=")
         return Validated.fromEither(
@@ -63,14 +61,14 @@ class KafkaServiceController : Controller() {
     }
 
     private fun getAdditionalProperties(state: KafkaBootstrap): Either<ConfigError, Map<String, String>> {
-        if (state.additionalProps != null) {
-            return state.additionalProps
+        return if (state.additionalProps != null) {
+            state.additionalProps
                 .reader()
                 .readLines()
                 .traverse(Either.applicative<ConfigError>()) { validateAdditionalProperty(it).toEither() }
                 .map { it.fix().toMap() }
         } else {
-            return Either.right(emptyMap<String, String>())
+            Either.right(emptyMap())
         }
 
     }
@@ -138,25 +136,6 @@ class KafkaServiceController : Controller() {
             val client = IO.effect { propsEither.map { KafkaProducer<String, String>(it) } }.bind()
             client
         }
-
-
-    // can't call without keeping a state.. (if not resource)
-    fun closeConsumer(consumer: Consumer<String, String>): IO<Unit> = IO {
-        log.info("CLOSING CONSUMER")
-        consumer.unsubscribe()
-        consumer.close()
-    }
-
-    fun closeAdmin(admin: AdminClient): IO<Unit> = IO {
-        log.info("CLOSING ADMIN")
-        admin.close()
-    }
-
-
-    // would have been good, but I could not manage to keep the resource open while navigating
-    // fun kafkaAdminResource(config: KafkaBootstrap) = Resource({ createAdminClient(config) }, ::closeAdmin, IO.bracket()).fix()
-    // fun kafkaConsumerResource(config: KafkaBootstrap) = Resource({ createKafkaConsumer(config) }, ::closeConsumer, IO.bracket()).fix()
-
 
 }
 

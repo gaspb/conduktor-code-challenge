@@ -14,16 +14,6 @@ import kotlinx.coroutines.launch
 import tornadofx.Workspace
 import tornadofx.alert
 
-sealed class KafkaInitialError : Throwable() {
-    object NotInitialized : KafkaInitialError()
-    data class ConnectError(val data: String) : KafkaInitialError()
-}
-
-
-fun exec() {
-
-}
-
 class AppWorkspace : Workspace() {
     private val service: KafkaServiceController by inject()
 
@@ -34,26 +24,19 @@ class AppWorkspace : Workspace() {
         disableDelete()
         disableSave()
 
-
-
         subscribe<AdminConfigUpdated> {
             val model = it.config
             val job = coroutineScope.launch(Dispatchers.JavaFx) {
                 service.createAdminClient(model).map { eth ->
                     eth.mapLeft {
                         err -> alert(Alert.AlertType.ERROR,"Failed to connect to cluster : " + err.message)
-
                     }
                         .map { admin ->
-
                             val newModel = KafkaBootstrapModel()
                             newModel.item = model
                             dockInNewScope<TopicsView>(newModel, KafkaAdminController(admin), service)
-
-
                         }
                 }.suspendCancellable()
-
             }
             workspace.whenDeleted {
                 coroutineScope.launch(Dispatchers.JavaFx) {

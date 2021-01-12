@@ -6,7 +6,7 @@ import tornadofx.getProperty
 import tornadofx.property
 
 class Topic {
-    var name by property<String>()
+    var name: String by property<String>()
     fun nameProperty() = getProperty(Topic::name)
 
 

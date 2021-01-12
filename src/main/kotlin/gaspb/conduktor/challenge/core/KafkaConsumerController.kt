@@ -17,7 +17,7 @@ import tornadofx.Controller
 import java.time.Duration
 
 
-class KafkaConsumerController(private val consumer: Consumer<String, String>, val conf: KafkaConsumer) : Controller() {
+class KafkaConsumerController(private val consumer: Consumer<String, String>, private val conf: KafkaConsumer) : Controller() {
 
 
     data class Record(val key: String, val value: String, val timestamp: Long)
@@ -50,14 +50,13 @@ class KafkaConsumerController(private val consumer: Consumer<String, String>, va
             it.close()
         })
             .flatMap { cons ->
-                Stream.callback<Record> {
+                Stream.callback {
                     val partitions = cons.partitionsFor(topic).map { a -> TopicPartition(a.topic(), a.partition()) }
                     cons.assign(partitions)
                     cons.seekToBeginning(partitions)
                     log.info("subscriptionStream dbg isActive " + currentCoroutineContext().isActive)
                     while (currentCoroutineContext().isActive) {
-
-                        val records = consumer.poll(Duration.ofMillis(conf.pollTimeout))
+                        val records = cons.poll(Duration.ofMillis(conf.pollTimeout))
                         records.records(topic).forEach {
                             emit(Record(it.key(), it.value(), it.timestamp()))
                         }

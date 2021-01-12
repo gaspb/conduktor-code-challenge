@@ -7,11 +7,11 @@ import tornadofx.getProperty
 import tornadofx.property
 
 class KafkaProducer {
-    var interval by property<Long>()
+    var interval: Long by property<Long>()
     fun intervalProperty() = getProperty(KafkaProducer::interval)
 
 }
 
 class KafkaProducerModel : ItemViewModel<KafkaProducer>(KafkaProducer()) {
-    val interval: LongProperty = bind { item?.intervalProperty() } as LongProperty
+    val interval: LongProperty = bind { item?.intervalProperty() }
 }
