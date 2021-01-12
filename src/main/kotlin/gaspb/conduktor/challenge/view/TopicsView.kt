@@ -3,10 +3,7 @@ package gaspb.conduktor.challenge.view
 import gaspb.conduktor.challenge.core.KafkaAdminController
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.model.Topic
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import tornadofx.*
 
 
@@ -16,18 +13,19 @@ class TopicsScope : Scope() {
 class TopicsView : View("Topics") {
 
     override val scope= super.scope as TopicsScope
+    val coroutineScope = MainScope()
     private val controller : KafkaAdminController by inject()
     private val topics = mutableListOf<String>().asObservable()
 
 
-    private val job = GlobalScope.launch( Dispatchers.IO ) {
+    private val job = coroutineScope.launch( Dispatchers.IO ) {
        val ts = controller.listTopics()
         topics.addAll(ts)
     }
 
     override fun onDelete() {
         super.onDelete()
-        GlobalScope.launch( Dispatchers.IO ) {
+        coroutineScope.launch( Dispatchers.IO ) {
             job.cancelAndJoin()
         }
     }
@@ -35,9 +33,7 @@ class TopicsView : View("Topics") {
 
 
     override val root = borderpane {
-
         center {
-
             listview(topics) {
                 cellCache {
                     s ->  button(s) {

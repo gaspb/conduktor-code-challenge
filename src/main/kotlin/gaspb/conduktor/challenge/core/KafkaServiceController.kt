@@ -7,7 +7,9 @@ import arrow.core.extensions.either.applicative.applicative
 import arrow.core.extensions.either.applicative.map
 import arrow.core.extensions.list.traverse.traverse
 import arrow.fx.IO
+import arrow.fx.Resource
 import arrow.fx.extensions.fx
+import arrow.fx.extensions.io.bracket.bracket
 import gaspb.conduktor.challenge.model.KafkaBootstrap
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.KafkaAdminClient
@@ -114,11 +116,6 @@ class KafkaServiceController : Controller() {
     }
 
     fun createKafkaConsumer(state: KafkaBootstrap): IO<Either<ConfigError, KafkaConsumer<String, String>>> =
-/*
-       suspend {
-           val propsEither = buildConsumerProperties(state)
-           propsEither.map { KafkaConsumer<String, String>(it) }
-       }*/
        IO.fx {
             val propsEither = IO.effect { buildConsumerProperties(state) }.bind()
             val client = IO.effect { propsEither.map { KafkaConsumer<String, String>(it) } }.bind()
@@ -141,7 +138,7 @@ class KafkaServiceController : Controller() {
 
     // would have been good, but I could not manage to keep the resource open while navigating
    // fun kafkaAdminResource(config: KafkaBootstrap) = Resource({ createAdminClient(config) }, ::closeAdmin, IO.bracket()).fix()
-    //fun kafkaConsumerResource(config: KafkaBootstrap) = Resource({ createKafkaConsumer(config) }, ::closeConsumer, IO.bracket()).fix()
+   // fun kafkaConsumerResource(config: KafkaBootstrap) = Resource({ createKafkaConsumer(config) }, ::closeConsumer, IO.bracket()).fix()
 
 
 }

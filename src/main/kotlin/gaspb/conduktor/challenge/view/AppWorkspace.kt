@@ -1,11 +1,13 @@
 package gaspb.conduktor.challenge.view
+import arrow.fx.extensions.io.unsafeRun.unsafeRun
 import gaspb.conduktor.challenge.core.KafkaAdminController
 import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.view.events.AdminConfigUpdated
 import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
 import tornadofx.*
-
+import arrow.fx.coroutines.*
+import arrow.integrations.kotlinx.suspendCancellable
 
 sealed class KafkaInitialError : Throwable() {
     object NotInitialized : KafkaInitialError()
@@ -13,30 +15,29 @@ sealed class KafkaInitialError : Throwable() {
 }
 
 
+fun exec() {
+
+}
+
 class AppWorkspace : Workspace() {
     private val bootstrapView: BootstrapView by inject()
     private val topicsView: TopicsView by inject()
     private val controller : KafkaServiceController by inject()
 
+    private val coroutineScope = MainScope()
 
-
-// TODO fix menubar (delete, save etc)
     init {
         dock<BootstrapView>()
         disableDelete()
         disableSave()
 
-        log.info("subscribing AdminConfigUpdated")
         subscribe<AdminConfigUpdated> {
-            log.info("recieve AdminConfigUpdated")
             val model = it.config
-
-
-            val job = GlobalScope.launch(Dispatchers.JavaFx) {
-                controller.createAdminClient(model).suspended()
-                    .mapLeft {
-                        // TODO notification
-                        dock<BootstrapView>()
+            val job = coroutineScope.launch(Dispatchers.JavaFx) {
+                controller.createAdminClient(model).map { eth ->
+                    eth.mapLeft {
+                    // TODO notification
+                    dock<BootstrapView>()
                     }
                     .map { admin ->
                         val kafkaController = KafkaAdminController(admin)
@@ -45,11 +46,12 @@ class AppWorkspace : Workspace() {
                         newScope.bootstrapModel.item = model
 
                         dock<TopicsView>(newScope)
-                        //add<Menu>()
                     }
+                }.suspendCancellable()
+
             }
             workspace.whenDeleted {
-                GlobalScope.launch(Dispatchers.JavaFx) {
+                coroutineScope.launch(Dispatchers.JavaFx) {
                     job.cancelAndJoin()
                 }
             }
