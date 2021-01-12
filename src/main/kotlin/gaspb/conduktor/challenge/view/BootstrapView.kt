@@ -17,17 +17,6 @@ class BootstrapView : View("Cluster") {
         disableClose()
         disableRefresh()
         disableCreate()
-        val b = KafkaBootstrap()
-        b.additionalProps = "security.protocol=SSL\n" +
-                "ssl.truststore.location=/home/uto/Downloads/client.truststore-29262205196991976.jks\n" +
-                "ssl.truststore.password=ec1efbaca4934ffea0da695726c667bc\n" +
-                "ssl.keystore.type=PKCS12\n" +
-                "ssl.keystore.location=/home/uto/Downloads/client.keystore-11222543342845213716.p12\n" +
-                "ssl.keystore.password=b1542884b1d344908b867e8cddb61689\n" +
-                "ssl.key.password=b1542884b1d344908b867e8cddb61689\n" +
-                "ssl.endpoint.identification.algorithm="
-        b.url = "kafka-374a5f07-firemailbox-b04b.aivencloud.com:24918"
-        model.item = b
     }
 
 

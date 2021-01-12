@@ -26,8 +26,12 @@ import kotlin.collections.set
 class KafkaServiceController : Controller() {
 
     sealed class ConfigError : Throwable() {
-        data class MissingConfig(val field: String) : ConfigError()
-        data class ParseConfig(val field: String) : ConfigError()
+        data class MissingConfig(val field: String) : ConfigError() {
+            override val message: String = "Field $field is required"
+        }
+        data class ParseConfig(val field: String) : ConfigError() {
+            override val message: String = "Parsing failed for field $field "
+        }
     }
 
 
