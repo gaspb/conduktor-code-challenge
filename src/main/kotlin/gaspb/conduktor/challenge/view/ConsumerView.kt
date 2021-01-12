@@ -18,11 +18,11 @@ import kotlinx.coroutines.launch
 import tornadofx.*
 
 
-class ConsumerView : Fragment("Consuming") {
+class ConsumerView(private val kafkaConsumerModel: KafkaConsumerModel) : Fragment("Consuming") {
 
     private val topicModel: TopicModel by inject()
     private val bootstrapModel: KafkaBootstrapModel by inject()
-    private val kafkaConsumerModel: KafkaConsumerModel by inject()
+
 
 
     private val coroutineScope = MainScope()

@@ -5,7 +5,7 @@ import gaspb.conduktor.challenge.model.KafkaConsumerModel
 import tornadofx.*
 
 
-class ConsumerEditor : View("Consumer editor") {
+class ConsumerEditor : Fragment("Consumer editor") {
 
     val model = KafkaConsumerModel()
 
@@ -32,8 +32,7 @@ class ConsumerEditor : View("Consumer editor") {
             action {
                 model.commit {
 
-                    setInScope(model)
-                    val consumerView = find<ConsumerView>()
+                    val consumerView = ConsumerView(model)
                     val parentView = find(TopicLeftViewContainer::class)
                     parentView.add(consumerView)
                     close()

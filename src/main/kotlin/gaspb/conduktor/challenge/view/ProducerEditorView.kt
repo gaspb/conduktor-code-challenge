@@ -4,7 +4,7 @@ import gaspb.conduktor.challenge.model.KafkaProducerModel
 import tornadofx.*
 
 
-class ProducerEditor : View("Consumer editor") {
+class ProducerEditor : Fragment("Consumer editor") {
 
     val model = KafkaProducerModel()
 
@@ -21,8 +21,8 @@ class ProducerEditor : View("Consumer editor") {
         button("Produce !") {
             action {
                 model.commit {
-                    setInScope(model)
-                    val producerView = find<ProducerView>()
+                    
+                    val producerView = ProducerView(model)
                     val parentView = find(TopicRightViewContainer::class)
                     parentView.add(producerView)
                     close()
