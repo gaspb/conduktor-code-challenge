@@ -7,7 +7,9 @@ import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.model.KafkaConsumerModel
 import gaspb.conduktor.challenge.model.TopicModel
+import gaspb.conduktor.challenge.view.events.TopicViewUndocked
 import gaspb.conduktor.challenge.view.style.Style
+import javafx.scene.control.Alert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collect
@@ -32,7 +34,7 @@ class ConsumerView : Fragment("Consuming") {
     private val job = coroutineScope.launch(Dispatchers.JavaFx) {
         val consumer = controller.createKafkaConsumer(bootstrapModel.item, kafkaConsumerModel.item).suspendCancellable()
         when (consumer) {
-            is Either.Left -> log.info("Hi im error")// TODO
+            is Either.Left -> alert(Alert.AlertType.ERROR,"Failed to create kafka consumer")
             is Either.Right -> {
                 val consumerService = KafkaConsumerController(consumer.b, kafkaConsumerModel.item)
                 consumerService.subscriptionFlow(topicModel.item.name)
@@ -44,10 +46,10 @@ class ConsumerView : Fragment("Consuming") {
         }
     }
 
-    // TODO not working => need to call from docked view (parent) I guess
-    override fun onUndock() {
-        super.onUndock()
-        job.cancel()
+    init {
+        subscribe<TopicViewUndocked> {
+            job.cancel()
+        }
     }
 
     override val root = vbox {

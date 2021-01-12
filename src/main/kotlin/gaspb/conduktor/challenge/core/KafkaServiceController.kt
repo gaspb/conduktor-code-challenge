@@ -78,7 +78,6 @@ class KafkaServiceController : Controller() {
     }
 
 
-    // TODO add more properties
     private suspend fun buildConsumerProperties(
         state: KafkaBootstrap,
         conf: gaspb.conduktor.challenge.model.KafkaConsumer

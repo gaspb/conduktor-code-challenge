@@ -3,6 +3,7 @@ package gaspb.conduktor.challenge.view
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.model.KafkaConsumerModel
 import gaspb.conduktor.challenge.model.TopicModel
+import gaspb.conduktor.challenge.view.events.TopicViewUndocked
 import gaspb.conduktor.challenge.view.style.Style
 import tornadofx.*
 
@@ -24,6 +25,11 @@ class TopicView : View("Topic") {
         disableClose()
         disableSave()
         disableDelete()
+    }
+
+    override fun onUndock() {
+        super.onUndock()
+        fire(TopicViewUndocked())
     }
 
     override val root = borderpane {
