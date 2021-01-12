@@ -1,56 +1,80 @@
 package gaspb.conduktor.challenge.view
 
 import gaspb.conduktor.challenge.core.KafkaAdminController
+import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
-import gaspb.conduktor.challenge.model.Topic
-import kotlinx.coroutines.*
+import gaspb.conduktor.challenge.model.TopicModel
+import gaspb.conduktor.challenge.view.events.TopicCreated
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import tornadofx.*
 
 
 class TopicsScope : Scope() {
     val bootstrapModel: KafkaBootstrapModel = KafkaBootstrapModel()
 }
+
 class TopicsView : View("Topics") {
 
-    override val scope= super.scope as TopicsScope
-    val coroutineScope = MainScope()
-    private val controller : KafkaAdminController by inject()
+    private val bootstrapModel: KafkaBootstrapModel by inject()
+    private val controller: KafkaAdminController by inject()
+    private val service: KafkaServiceController by inject()
+
+    private val coroutineScope = MainScope()
+
     private val topics = mutableListOf<String>().asObservable()
 
 
-    private val job = coroutineScope.launch( Dispatchers.IO ) {
-       val ts = controller.listTopics()
+    private fun doFetchTopics() = coroutineScope.launch(Dispatchers.JavaFx) {
+        topics.clear()
+        val ts = controller.listTopics()
         topics.addAll(ts)
     }
 
-    override fun onDelete() {
-        super.onDelete()
-        coroutineScope.launch( Dispatchers.IO ) {
-            job.cancelAndJoin()
+    private val job = doFetchTopics()
+
+
+    override fun onCreate() {
+        find<TopicEditor>().openWindow()
+    }
+
+    init {
+        disableRefresh()
+        disableRefresh()
+        disableClose()
+        disableSave()
+        disableDelete()
+        subscribe<TopicCreated> {
+            doFetchTopics()
+        }
+    }
+
+    override val root = borderpane {
+
+        center {
+            listview(topics) {
+                cellCache { s ->
+                    button(s) {
+                        action {
+                            val topicModel = TopicModel()
+                            topicModel.item.name = s
+                            workspace.dockInNewScope<TopicView>(topicModel, bootstrapModel, service)
+
+                        }
+                    }
+                }
+            }
         }
     }
 
 
-
-    override val root = borderpane {
-        center {
-            listview(topics) {
-                cellCache {
-                    s ->  button(s) {
-                                action {
-
-                                    log.info("selected topic")
-                                    val newScope = TopicScope()
-                                    val model = Topic()
-                                    model.name = s
-                                    newScope.topicModel.item = model
-                                    newScope.bootstrapModel.item = scope.bootstrapModel.item
-                                    val view = find(TopicView::class, newScope)
-                                    replaceWith(view)
-                                }
-                         }
-                }
-            }
+    override fun onUndock() {
+        super.onUndock()
+        coroutineScope.launch(Dispatchers.IO) {
+            job.cancelAndJoin()
         }
     }
 

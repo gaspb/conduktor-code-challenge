@@ -5,3 +5,5 @@ import tornadofx.FXEvent
 
 
 class AdminConfigUpdated(val config: KafkaBootstrap) : FXEvent()
+
+class TopicCreated : FXEvent()

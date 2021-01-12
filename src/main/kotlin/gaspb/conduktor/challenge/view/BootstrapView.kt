@@ -1,6 +1,5 @@
 package gaspb.conduktor.challenge.view
 
-import gaspb.conduktor.challenge.core.KafkaServiceController
 import gaspb.conduktor.challenge.model.KafkaBootstrap
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.view.events.AdminConfigUpdated
@@ -8,11 +7,16 @@ import javafx.scene.layout.Priority
 import tornadofx.*
 
 
+class BootstrapView : View("Cluster") {
 
-class BootstrapView : View("My View") {
+    val model: KafkaBootstrapModel by inject()
 
-    val model : KafkaBootstrapModel by inject()
     init {
+        disableDelete()
+        disableSave()
+        disableClose()
+        disableRefresh()
+        disableCreate()
         val b = KafkaBootstrap()
         b.additionalProps = "security.protocol=SSL\n" +
                 "ssl.truststore.location=/home/uto/Downloads/client.truststore-29262205196991976.jks\n" +
@@ -27,20 +31,24 @@ class BootstrapView : View("My View") {
     }
 
 
-    override val root =  form {
-        fieldset {
-            field("Kafka brokers") {
-                textfield(model.url).required()
-            }
-            field("additional properties") {
-                textarea(model.additionalProps) {
-                    prefRowCount = 5
-                    vgrow = Priority.ALWAYS
-                }
-            }
+    override val root = form {
 
+        fieldset {
+            vbox {
+                field("Kafka brokers") {
+                    textfield(model.url).required()
+                }
+                field("additional props") {
+                    textarea(model.additionalProps) {
+                        prefRowCount = 5
+                        vgrow = Priority.ALWAYS
+                    }
+                }
+
+            }
         }
-        button("Save") {
+
+        button("Connect") {
             action {
                 model.commit {
                     fire(AdminConfigUpdated(model.item))

@@ -3,40 +3,63 @@ package gaspb.conduktor.challenge.view
 import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.model.KafkaConsumerModel
 import gaspb.conduktor.challenge.model.TopicModel
+import gaspb.conduktor.challenge.view.style.Style
 import tornadofx.*
 
 
 class TopicScope : Scope() {
     val topicModel: TopicModel = TopicModel()
     val bootstrapModel: KafkaBootstrapModel = KafkaBootstrapModel()
-    val kafkaConsumerModel : KafkaConsumerModel  = KafkaConsumerModel()
+    val kafkaConsumerModel: KafkaConsumerModel = KafkaConsumerModel()
 }
+
 class TopicView : View("Topic") {
 
-    override val scope = super.scope as TopicScope
-    val model: TopicModel = scope.topicModel
+    val model: TopicModel by inject()
+    val bootstrapModel: KafkaBootstrapModel by inject()
 
     init {
-        log.info("Im in topicView")
+        disableRefresh()
+        disableRefresh()
+        disableClose()
+        disableSave()
+        disableDelete()
     }
 
     override val root = borderpane {
         top {
             text(model.name)
-
         }
-        center {
-            button("Consume") {
-                action {
-                    val newScope = TopicScope()
-                    newScope.topicModel.item = model.item
-                    newScope.bootstrapModel.item = scope.bootstrapModel.item
-                    openInternalWindow<ConsumerEditor>()
-                }
-            }
-        }
+        left<TopicLeftViewContainer>()
+        right<TopicRightViewContainer>()
     }
 
 }
 
+class TopicLeftViewContainer : View("Consumers") {
+    override val root = vbox {
+        style {
+            prefWidth = 400.px
+        }
+        addClass(Style.blackBorder)
+        button("Add a consumer") {
+            action {
+                find<ConsumerEditor>().openWindow()
+            }
+        }
+    }
+}
 
+class TopicRightViewContainer : View("Producers") {
+    override val root = vbox {
+        style {
+            prefWidth = 400.px
+        }
+        addClass(Style.blackBorder)
+        button("Add a producer") {
+            action {
+                find<ProducerEditor>().openWindow()
+            }
+        }
+    }
+}

@@ -7,27 +7,20 @@ import arrow.core.extensions.either.applicative.applicative
 import arrow.core.extensions.either.applicative.map
 import arrow.core.extensions.list.traverse.traverse
 import arrow.fx.IO
-import arrow.fx.Resource
 import arrow.fx.extensions.fx
-import arrow.fx.extensions.io.bracket.bracket
 import gaspb.conduktor.challenge.model.KafkaBootstrap
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.KafkaAdminClient
 import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import tornadofx.Controller
 import java.util.*
-import kotlin.collections.Map
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.emptyMap
-import kotlin.collections.forEach
-import kotlin.collections.joinToString
-import kotlin.collections.plus
 import kotlin.collections.set
-import kotlin.collections.toMap
 
 
 class KafkaServiceController : Controller() {
@@ -66,7 +59,7 @@ class KafkaServiceController : Controller() {
     }
 
     private fun getAdditionalProperties(state: KafkaBootstrap): Either<ConfigError, Map<String, String>> {
-        if(state.additionalProps != null) {
+        if (state.additionalProps != null) {
             return state.additionalProps
                 .reader()
                 .readLines()
@@ -84,16 +77,29 @@ class KafkaServiceController : Controller() {
         return properties
     }
 
+
     // TODO add more properties
-    private suspend fun buildConsumerProperties(state: KafkaBootstrap): Either<ConfigError, Properties> = either {
+    private suspend fun buildConsumerProperties(
+        state: KafkaBootstrap,
+        conf: gaspb.conduktor.challenge.model.KafkaConsumer
+    ): Either<ConfigError, Properties> = either {
         val brokers = getBrokers(state).bind()
         val additionalProperties = getAdditionalProperties(state).bind()
         val configMap = additionalProperties + mapOf<String, String>(
             "bootstrap.servers" toT brokers.all.joinToString(separator = ","),
             "key.deserializer" toT StringDeserializer::class.java.canonicalName,
-            "value.deserializer" toT StringDeserializer::class.java.canonicalName
+            "value.deserializer" toT StringDeserializer::class.java.canonicalName,
         )
-        buildPropertiesObject(configMap)
+        if (conf.enableAutoCommit) {
+            val extra = configMap + mapOf<String, String>(
+                "enable.auto.commit" toT conf.enableAutoCommit.toString(),
+                "group.id" toT conf.groupId
+            )
+            buildPropertiesObject(extra)
+        } else {
+            buildPropertiesObject(configMap)
+        }
+
     }
 
     private suspend fun buildAdminProperties(state: KafkaBootstrap): Either<ConfigError, Properties> = either {
@@ -107,18 +113,26 @@ class KafkaServiceController : Controller() {
         buildPropertiesObject(configMap)
     }
 
-    fun createAdminClient(state: KafkaBootstrap): IO<Either<ConfigError , AdminClient>> = IO.fx {
-        log.info("in createAdminClient")
+    fun createAdminClient(state: KafkaBootstrap): IO<Either<ConfigError, AdminClient>> = IO.fx {
         val propsEither = IO.effect { buildAdminProperties(state) }.bind()
-        log.info("in createAdminClient - p2")
-        val client = IO.effect { propsEither.map { KafkaAdminClient.create(it)}}.bind()
+        val client = IO.effect { propsEither.map { KafkaAdminClient.create(it) } }.bind()
         client
     }
 
-    fun createKafkaConsumer(state: KafkaBootstrap): IO<Either<ConfigError, KafkaConsumer<String, String>>> =
-       IO.fx {
-            val propsEither = IO.effect { buildConsumerProperties(state) }.bind()
+    fun createKafkaConsumer(
+        state: KafkaBootstrap,
+        conf: gaspb.conduktor.challenge.model.KafkaConsumer
+    ): IO<Either<ConfigError, KafkaConsumer<String, String>>> =
+        IO.fx {
+            val propsEither = IO.effect { buildConsumerProperties(state, conf) }.bind()
             val client = IO.effect { propsEither.map { KafkaConsumer<String, String>(it) } }.bind()
+            client
+        }
+
+    fun createKafkaProducer(state: KafkaBootstrap): IO<Either<ConfigError, KafkaProducer<String, String>>> =
+        IO.fx {
+            val propsEither = IO.effect { buildAdminProperties(state) }.bind()
+            val client = IO.effect { propsEither.map { KafkaProducer<String, String>(it) } }.bind()
             client
         }
 
@@ -137,8 +151,8 @@ class KafkaServiceController : Controller() {
 
 
     // would have been good, but I could not manage to keep the resource open while navigating
-   // fun kafkaAdminResource(config: KafkaBootstrap) = Resource({ createAdminClient(config) }, ::closeAdmin, IO.bracket()).fix()
-   // fun kafkaConsumerResource(config: KafkaBootstrap) = Resource({ createKafkaConsumer(config) }, ::closeConsumer, IO.bracket()).fix()
+    // fun kafkaAdminResource(config: KafkaBootstrap) = Resource({ createAdminClient(config) }, ::closeAdmin, IO.bracket()).fix()
+    // fun kafkaConsumerResource(config: KafkaBootstrap) = Resource({ createKafkaConsumer(config) }, ::closeConsumer, IO.bracket()).fix()
 
 
 }

@@ -1,13 +1,16 @@
 package gaspb.conduktor.challenge.view
-import arrow.fx.extensions.io.unsafeRun.unsafeRun
+
+import arrow.integrations.kotlinx.suspendCancellable
 import gaspb.conduktor.challenge.core.KafkaAdminController
 import gaspb.conduktor.challenge.core.KafkaServiceController
+import gaspb.conduktor.challenge.model.KafkaBootstrapModel
 import gaspb.conduktor.challenge.view.events.AdminConfigUpdated
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.javafx.JavaFx
-import tornadofx.*
-import arrow.fx.coroutines.*
-import arrow.integrations.kotlinx.suspendCancellable
+import kotlinx.coroutines.launch
+import tornadofx.Workspace
 
 sealed class KafkaInitialError : Throwable() {
     object NotInitialized : KafkaInitialError()
@@ -20,9 +23,7 @@ fun exec() {
 }
 
 class AppWorkspace : Workspace() {
-    private val bootstrapView: BootstrapView by inject()
-    private val topicsView: TopicsView by inject()
-    private val controller : KafkaServiceController by inject()
+    private val service: KafkaServiceController by inject()
 
     private val coroutineScope = MainScope()
 
@@ -31,22 +32,24 @@ class AppWorkspace : Workspace() {
         disableDelete()
         disableSave()
 
+
+
         subscribe<AdminConfigUpdated> {
             val model = it.config
             val job = coroutineScope.launch(Dispatchers.JavaFx) {
-                controller.createAdminClient(model).map { eth ->
+                service.createAdminClient(model).map { eth ->
                     eth.mapLeft {
-                    // TODO notification
-                    dock<BootstrapView>()
+                        // TODO notification
+                        dock<BootstrapView>()
                     }
-                    .map { admin ->
-                        val kafkaController = KafkaAdminController(admin)
-                        val newScope = TopicsScope()
-                        setInScope(kafkaController, newScope)
-                        newScope.bootstrapModel.item = model
+                        .map { admin ->
 
-                        dock<TopicsView>(newScope)
-                    }
+                            val newModel = KafkaBootstrapModel()
+                            newModel.item = model
+                            dockInNewScope<TopicsView>(newModel, KafkaAdminController(admin), service)
+
+
+                        }
                 }.suspendCancellable()
 
             }
