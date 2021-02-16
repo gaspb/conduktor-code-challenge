@@ -1,11 +1,16 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.21'
     id 'application'
+    id "org.openjfx.javafxplugin" version "0.0.9"
 }
 
 group 'gaspb.conduktor'
 version '1.0-SNAPSHOT'
 
+javafx {
+    version = "15.0.1"
+    modules = [ "javafx.base", "javafx.controls", "javafx.graphics", "javafx.media", "javafx.web", "javafx.fxml", "javafx.swing" ]
+}
 
 repositories {
     mavenCentral()
@@ -46,7 +51,7 @@ sourceSets {
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 kotlin {

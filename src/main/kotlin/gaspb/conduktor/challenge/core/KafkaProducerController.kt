@@ -3,6 +3,7 @@ package gaspb.conduktor.challenge.core
 
 import arrow.fx.coroutines.*
 import gaspb.conduktor.challenge.model.KafkaProducer
+import gaspb.conduktor.challenge.model.ProducerMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
@@ -40,16 +41,23 @@ class KafkaProducerController(private val producer: Producer<String, String>, va
             var i = 0
             while (currentCoroutineContext().isActive) {
                 val key = randomString(6)
-                val value = randomString(10)
+                    val value = randomString(conf.messageSize)
                 if (partition === null) {
                     producer.send(ProducerRecord(topic, key, value))
                 } else {
                     producer.send(ProducerRecord(topic, partition, key, value))
                 }
 
-                emit(i)
+                emit(conf.messageSize)
                 i += 1
-                sleep(Duration(conf.interval, TimeUnit.MILLISECONDS))
+
+
+                val interval = if(conf.method == ProducerMethod.USE_INTERVAL)
+                    conf.interval
+                else
+                    conf.messageSize / conf.throughput
+
+                sleep(Duration(interval, TimeUnit.MILLISECONDS))
 
 
             }

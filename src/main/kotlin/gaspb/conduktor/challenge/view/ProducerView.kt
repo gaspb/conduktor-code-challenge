@@ -9,7 +9,9 @@ import gaspb.conduktor.challenge.model.KafkaProducerModel
 import gaspb.conduktor.challenge.model.TopicModel
 import gaspb.conduktor.challenge.view.events.TopicViewUndocked
 import gaspb.conduktor.challenge.view.style.Style
+import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleLongProperty
 import javafx.scene.control.Alert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -17,6 +19,9 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import tornadofx.*
+import java.text.DecimalFormat
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 
 class ProducerView(private val kafkaProducerModel: KafkaProducerModel) : Fragment("Consuming") {
@@ -29,7 +34,19 @@ class ProducerView(private val kafkaProducerModel: KafkaProducerModel) : Fragmen
 
     private val controller: KafkaServiceController by inject()
 
-    private val count = SimpleIntegerProperty()
+    private val count = SimpleIntegerProperty(0)
+    private val bytesWritten = SimpleLongProperty(0)
+    private val throughput = SimpleDoubleProperty(0.0)
+
+    private val cycles = SimpleIntegerProperty(0)
+
+
+    init {
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate({
+            cycles.value += 1
+            throughput.value =  (bytesWritten.value.toDouble() / 1000) / (cycles.value / 10 )
+        },100, 100, TimeUnit.MILLISECONDS)
+    }
 
     private val job = coroutineScope.launch(Dispatchers.JavaFx) {
         when (val producer = controller.createKafkaProducer(bootstrapModel.item).suspendCancellable()) {
@@ -38,7 +55,8 @@ class ProducerView(private val kafkaProducerModel: KafkaProducerModel) : Fragmen
                 val producerService = KafkaProducerController(producer.b, kafkaProducerModel.item)
                 producerService.producerFlow(topicModel.item.name, null)
                     .collect {
-                        count.set(it)
+                        count.set(count.value + 1)
+                        bytesWritten.value += it
                     }
             }
         }
@@ -63,11 +81,28 @@ class ProducerView(private val kafkaProducerModel: KafkaProducerModel) : Fragmen
                 job.cancel()
             }
         }
-        hbox {
-            text("Sent : ")
-            text {
-                bind(count)
+        vbox {
+            hbox {
+                text("Messages : ")
+                text {
+                    bind(count)
+                }
+            }
+            hbox {
+                text("Written (KB) : ")
+                text {
+                    bind(bytesWritten.doubleBinding { it?.let { it.toDouble() / 1000}?:0.0 })
+                }
+            }
+            hbox {
+                text("Throughput (KB/s) : ")
+                text {
+                    bind(throughput.stringBinding {
+                        DecimalFormat("#,###.##").format(it)
+                    })
+                }
             }
         }
+
     }
 }
